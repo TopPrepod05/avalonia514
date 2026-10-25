@@ -11,7 +11,9 @@ public partial class MainViewModel : ViewModelBase
 {
     [ObservableProperty] private string login = "";
     [ObservableProperty] private string email = "";
-    ObservableCollection<User> Users { get; set; } = [];
+    public ObservableCollection<User> Users { get; set; } = [];
+
+    [ObservableProperty] private User? selectedUser;
     public MainViewModel()
     {
         _ = LoadUsersAsync();
@@ -31,10 +33,15 @@ public partial class MainViewModel : ViewModelBase
         var nU = new User { Login = this.Login, Email = this.Email };
         await db.AddAsync(nU);
         await db.SaveChangesAsync();
+        await LoadUsersAsync();
     }
 
     [RelayCommand] private async Task DeleteUser()
     {
-
+        using var db = new AppDbContext();
+        if (SelectedUser == null) return;
+        db.Remove(SelectedUser);
+        await db.SaveChangesAsync();
+        await LoadUsersAsync();
     }
 }
